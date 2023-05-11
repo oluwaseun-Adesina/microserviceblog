@@ -4,6 +4,8 @@ dotenv.config();
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcryptjs')
 
+const {validateUser, validateUserLogin} = require('../lib/validator')
+
 
 const secret = process.env.APP_SECRET;
 const maxAge =  30 * 60 * 60 * 60;
@@ -30,6 +32,16 @@ getResetPasswordToken = () =>{
 exports.registerUser = async (req, res, next) => {
 
     try{
+
+        // validate user input
+        const { error } = validateUser(req.body);
+
+        if(error){
+            return res.status(400).json({ message: error.details[0].message })
+        }
+
+
+
         const { name, email, password, role } = req.body
 
         // check if email already exists
@@ -56,11 +68,7 @@ exports.registerUser = async (req, res, next) => {
             name: user.name,
             email: user.email
             })
-
-         // log user automatically after registration
-        //  console.log(token)
-    
-        // res.cookie('jwt', token, { httpOnly: true, maxAge: maxAge * 1000})
+            
         res.status(201).json( {message: "Registered successfully", data: user, auth: token} );
 
        
@@ -76,6 +84,15 @@ exports.registerUser = async (req, res, next) => {
 exports.loginUser = async (req, res, next) => {
 
     try{
+
+        // validate user input
+        const { error } = validateUserLogin(req.body);
+
+        if(error){
+            return res.status(400).json({ message: error.details[0].message })
+        }
+
+        
         const { email, password } = req.body
 
         // check if email already exists
@@ -109,8 +126,7 @@ exports.loginUser = async (req, res, next) => {
 
 
         
- 
-        // res.cookie('jwt', token, { httpOnly: true, maxAge: maxAge * 1000})
+
         res.status(200).json( {message: "Logged in successfully", data: emailExist, auth: token} );
 
         // console.log(req.headers)

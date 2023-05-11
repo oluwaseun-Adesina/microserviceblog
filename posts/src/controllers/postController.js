@@ -4,6 +4,8 @@ const axios = require('axios')
 const dotenv = require('dotenv')
 dotenv.config()
 
+const { validateCreatePost, validateUpdatePost} = require('../lib/validator')
+
 const getUserRoute = process.env.getUserRoute
 
 // get all the post
@@ -36,9 +38,16 @@ exports.getSinglePost = async (req, res, next) => {
 }
 
 exports.createPost = async (req, res, next) => {
-    const { title, description } = req.body
+    
     try {
 
+        const { error } = validateCreatePost(req.body)
+
+        if(error){
+            return res.status(400).json({ message: error.details[0].message})
+        }
+
+        const { title, description } = req.body
         // get current user
         const createdbyUser = req.user
 
@@ -64,7 +73,12 @@ exports.createPost = async (req, res, next) => {
 
 exports.updatePost = async (req, res, next) => {
     try {
+        
+        const { error } = validateCreatePost(req.body)
 
+        if(error){
+            return res.status(400).json({ message: error.details[0].message})
+        }
         // get current user
         const id = req.params.id
 

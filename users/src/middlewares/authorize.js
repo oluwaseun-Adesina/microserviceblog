@@ -56,7 +56,6 @@ const requireAuth = async (req, res, next) => {
 // check admin
 const checkAdmin = async (req, res, next) => {
 
-    // const token = req.cookies.jwt;
     const user = await getCurrentUser(req, res);
     try {
 
