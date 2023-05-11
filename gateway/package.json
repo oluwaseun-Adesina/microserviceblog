@@ -2,18 +2,15 @@
   "name": "gateway",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
-    "start": "nodemon app.js",
-    "posts": "cd ../posts/src && npm run dev",
-    "users": "cd ../users/src && npm run dev",
-    "start_full_app": "concurrently \"npm run start\" \"npm run posts\" \"npm run users\""
+    "start": "node app.js",
+    "dev": "nodemon app.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "concurrently": "^8.0.1",
     "cors": "^2.8.5",
     "express": "^4.18.2",
     "express-http-proxy": "^1.6.3"
