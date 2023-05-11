@@ -4,6 +4,7 @@ const database = require('./config/database');
 dotenv.config();
 const PORT = process.env.PORT;
 const router = require('./routes/userRoute')
+const internals = require('../src/routes/internals/postUserRoute')
 
 const StartServer = async() =>{
 
@@ -15,6 +16,7 @@ const StartServer = async() =>{
     app.use(express.json());
     app.use(express.urlencoded({extended: true}));
 
+    app.use(internals)
     app.use(router);
     
     app.listen(PORT, () =>{

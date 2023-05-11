@@ -393,6 +393,21 @@ module.exports.createPost = async (req, res, next) =>{
     }
 }
 
+exports.allUsers = async (req, res, next) => {
+
+    try{
+        const users = await User.find()
+
+        res.json({data: users})
+        // res.status(200).json( {message: "All users", data: users} );
+
+    }catch(error){
+        console.log(error)
+        res.status(400).json({ error });
+    }
+
+}
+
 // // function to recieve just created post from the post service and add it to the user
 // module.exports.addPost = async (req, res, next) =>{
 //     try{

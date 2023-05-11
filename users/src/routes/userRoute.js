@@ -10,6 +10,7 @@ router.route('/register').post(registerUser);
 // login user
 router.route('/login').post(loginUser); 
 
+
 // logout user
 router.route('/logout').get(logoutUser);
 

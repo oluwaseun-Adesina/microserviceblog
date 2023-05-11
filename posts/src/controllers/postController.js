@@ -1,6 +1,10 @@
 const express = require('express')
 const Post = require('../model/Post')
 const axios = require('axios')
+const dotenv = require('dotenv')
+dotenv.config()
+
+const getUserRoute = process.env.getUserRoute
 
 // get all the post
 exports.getAllPosts = async (req, res, next) => {
@@ -145,29 +149,87 @@ exports.getPostByUser = async (req, res, next) => {
     }
 }
 
-// count all post by user aggregation 
+// // count all post by user aggregation 
+// exports.countPostByUser = async (req, res, next) => {
+//     try {
+
+//         const posts = await Post.find();
+
+//         const users = await axios.get('http://localhost:4000/users/internals/users', {
+//             headers: {
+//                 Authorization: req.headers.authorization
+//                 }
+//                 })
+
+//         const postsWithUser = posts.map(post => {
+//             const user = users.data.find(user => user.id === post.createdby)
+//             return {
+//                 ...post.toObject(),
+//                 user
+
+//             }
+
+//         })
+
+//         const post = postsWithUser
+
+//         res.json({ message: "Post by single user", data: postsWithUser })
+
+//     } catch (error) {
+//         next(error)
+//     }
+
+// }
+
 exports.countPostByUser = async (req, res, next) => {
     try {
-        // get the user
-        const post = await Post.aggregate([
-            {
-                $group: {
-                    _id: "$createdby",
-                    count: { $sum: 1 }
+        const posts = await Post.find();
+        const users = await axios.get('http://localhost:4000/users/internals/users', {
+            headers: {
+                Authorization: req.headers.authorization
+            }
+        })
+
+        // JSON.stringify(users.data)
+        return res.send(users.data)
+        const postsWithUser = posts.map(post => {
+            const user = users.data.find(user => user.id === post.createdby)
+
+            // console.log(user)
+            // console.log(`user ${user} and post ${post}`)
+            return {
+                post: {
+                    _id: post._id,
+                    title: post.title,
+                    description: post.description,
+                    createdAt: post.createdAt
+                },
+                author: {
+                    _id: user._id,
+                    name: user.name,
+                    email: user.email,
+                    createdAt: user.createdAt
                 }
             }
-        ])
+        })
 
-        const user = req.user
-
-        res.json({ message: "Post Grouped by User", data: post, fetchedby: user })
-       
+        res.json({ message: "Post by single user", data: postsWithUser })
 
     } catch (error) {
         next(error)
     }
-
 }
+       // get the user
+        // const post = await Post.aggregate([
+        //     {
+        //         $group: {
+        //             _id: "$createdby",
+        //             count: { $sum: 1 }
+        //         }
+        //     }
+        // ])
+
+        // res.json({ message: "Post Grouped by User", data: post })
 
 // count all post aggregation 
 exports.countAllPost = async( req, res, next) =>{
@@ -181,9 +243,8 @@ exports.countAllPost = async( req, res, next) =>{
             }
         ])
 
-        const user = req.user
 
-        res.json({message: "Count All post",data: Count, fetchedby: user} )
+        res.json({message: "Count All post",data: Count} )
 
     }catch(error){
         next(error)

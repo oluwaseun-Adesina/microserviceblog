@@ -19,8 +19,11 @@ const getCurrentUser = async (req, res) => {
         const decode = jwt.verify(token, SECRETE_KEY);
         // console.log(decode)
         // const id = mongoose.Types.ObjectId(decode.currentUser._id);
-        const id = decode.id
-        const user = await User.findOne({ _id: id }); 
+        const id = decode.id.id
+
+        // console.log(decode)
+        const user = await User.findById(id)
+        // const user = await User.findOne({ _id: id }); 
         // console.log(user)
         return user;
 
