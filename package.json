@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "start": "concurrently --kill-others-on-fail \"cd posts && npm start\" \"cd users && npm start\"",
-    "dev": "concurrently --kill-others-on-fail \"cd posts && npm run dev\" \"cd users && npm run dev\""
+    "start": "concurrently --kill-others-on-fail \"cd gateway && npm start\" \"cd posts && npm start\" \"cd users && npm start\"",
+    "dev": "concurrently --kill-others-on-fail \"cd gateway && npm start\" \"cd posts && npm run dev\" \"cd users && npm run dev\""
   },
   "keywords": [],
   "author": "",

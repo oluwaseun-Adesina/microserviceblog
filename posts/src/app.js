@@ -1,6 +1,6 @@
 const express = require("express");
 const dotenv = require("dotenv");
-const database = require("./config/database");
+const database = require('../src/model/config/database');
 dotenv.config();
 const PORT = process.env.PORT;
 const router = require("./routes/postRoute");

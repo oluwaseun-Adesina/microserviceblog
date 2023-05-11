@@ -13,7 +13,7 @@ const userSchema = joi.object({
     "string.email": "Please provide a valid email.",
   }),
   password: joi.string().required().min(6).messages({
-    "any.required": "Password enter your password.",
+    "any.required": "Please enter your password.",
     "string.empty": "Password must be atleast 6 characters long'.",
     "string.min": "Password must be atleast 6 characters long'.",
   }),
@@ -21,7 +21,11 @@ const userSchema = joi.object({
 
 // user login schema
 const userLoginSchema = joi.object({
-  email: joi.string().email().required(),
+  email: joi.string().email().required().messages({
+    "any.required": "Please enter your email.",
+    "string.empty": "Please enter your email.",
+    "string.email": "Please provide a valid email."
+  }),
   password: joi.string().required(),
 });
 
