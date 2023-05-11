@@ -60,7 +60,7 @@ exports.registerUser = async (req, res, next) => {
          // log user automatically after registration
         //  console.log(token)
     
-        res.cookie('jwt', token, { httpOnly: true, maxAge: maxAge * 1000})
+        // res.cookie('jwt', token, { httpOnly: true, maxAge: maxAge * 1000})
         res.status(201).json( {message: "Registered successfully", data: user, auth: token} );
 
        
@@ -110,7 +110,7 @@ exports.loginUser = async (req, res, next) => {
 
         
  
-        res.cookie('jwt', token, { httpOnly: true, maxAge: maxAge * 1000})
+        // res.cookie('jwt', token, { httpOnly: true, maxAge: maxAge * 1000})
         res.status(200).json( {message: "Logged in successfully", data: emailExist, auth: token} );
 
         // console.log(req.headers)
