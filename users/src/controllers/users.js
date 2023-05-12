@@ -4,10 +4,9 @@ dotenv.config();
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 
-const {
-  validateUser,
-  validateUserLogin,
-} = require("../lib/validations/userValidator");
+const { validateUser, validateUserLogin } = require("../lib/validations/users");
+
+const lib = require("../lib/users");
 
 const secret = process.env.APP_SECRET;
 const maxAge = 30 * 60 * 60 * 60;
@@ -38,48 +37,20 @@ const controller = {
 
   async registerUser(req, res, next) {
     try {
-      // validate user input
-      const { error } = validateUser(req.body);
+      let params;
 
-      if (error) {
-        return res.status(400).json({ message: error.details[0].message });
-      }
+      params = req.body;
 
-      const { name, email, password, role } = req.body;
+      const create_user = await lib.registerUser(params);
 
-      // check if email already exists
-      const emailExist = await User.findOne({ email });
-
-      if (emailExist) {
-        return res.status(400).json({ message: "Email already exists" });
-      }
-
-      // hash password
-      const salt = await bcrypt.genSalt();
-      const hashedPassword = await bcrypt.hash(password, salt);
-
-      // create new user
-      const user = await User.create({
-        name,
-        email,
-        password: hashedPassword,
-        role: role || "user",
-      });
-
-      const token = createToken({
-        id: user._id,
-        name: user.name,
-        email: user.email,
-      });
-
-      res.status(201).json({
-        status_code: 201,
-        message: "Registered successfully",
-        data: token,
-      });
+      if (create_user.token)
+        res.status(201).json({
+          status_code: 201,
+          message: "Registered Successfully",
+          data: create_user.token,
+        });
     } catch (err) {
-      console.log(err);
-      res.status(400).json({ err });
+      next(err);
     }
   },
 
@@ -294,7 +265,7 @@ const controller = {
     try {
       const users = await User.find();
 
-      res.status(200).json({ message: "All users", data: users });
+      res.status(200).json({ message: "Fetched All User", data: users });
     } catch (error) {
       console.log(error);
       res.status(400).json({ error });
@@ -397,104 +368,3 @@ const controller = {
 };
 
 module.exports = controller;
-
-// // function to recieve just created post from the post service and add it to the user
-// module.exports.addPost = async (req, res, next) =>{
-//     try{
-//         const { title, description, createdby, createAt, _id } = req.body
-
-//         const user = await User.findById(createdby)
-
-//         if(!user){
-//             return res.status(404).json({ message: "User not Found"})
-//         }
-
-//         user.posts.push({ title, description, createdby, createAt, _id });
-
-//         await user.save();
-
-//         console.log(user)
-
-//         res.status(201).json({ message: "Post Created", post: post})
-
-//     }catch(error){
-//         console.log(error)
-//         res.json({ error })
-//         next(error)
-//     }
-// }
-
-// module.exports.updatePost = async (req, res, next) =>{
-//     try{
-//         const { title, description, createdby, _id } = req.body
-
-//         const user = await User.findById(createdby)
-
-//         if(!user){
-//             return res.status(404).json({ message: "User not Found"})
-//         }
-
-//         const post = user.posts.find(post => post._id === _id)
-
-//         if(!post){
-//             return res.status(404).json({ message: "Post not Found"})
-//         }
-
-//         post.title = title || post.title
-//         post.description = description || post.description
-
-//         await user.save();
-
-//         res.status(201).json({ message: "Post Updated", post: post})
-//     }catch(error){
-//         console.log(error)
-//         res.status(500).json({ error })
-//     }
-
-// }
-
-// // delete post
-// module.exports.deletePost = async (req, res, next) =>{
-//     try{
-
-//         const id = req.params.id
-
-//         const user = await User.findById(req.user._id)
-
-//         if(!user){
-//             return res.status(404).json({ message: "User not Found"})
-//         }
-
-//         const post = user.posts.find(post => post._id === id)
-
-//         if(!post){
-//             return res.status(404).json({ message: "Post not Found"})
-//         }
-
-//         user.posts.pull({ _id: id })
-
-//         await user.save();
-
-//         res.status(201).json({ message: "Post Deleted", post: post})
-
-//     }catch(error){
-//         next(error)
-//     }
-
-// }
-
-// registerUser, loginUser, logoutUser, forgotPassword, resetPassword, getUserProfile, updatePassword, updateProfile, allUsers, getUserDetails, updateUser, deleteUser
-
-// add user post
-
-// {
-//     _id: new ObjectId("645a01f99a732d0d74971f07"),
-//     name: 'Test User',
-//     email: 'test@gmail.com',
-//     password: '$2a$10$d7uNxbZ8eqFmAIEOibciheakN82lr6xP.EL6fnYEs6TeZaqvxnet.',
-//     role: 'user',
-//     avatar: 'https://res.cloudinary.com/dj7k0lade/image/upload/v1623344783/avatars/avatar_qkxq8c.png',
-//     createdAt: 2023-05-09T08:19:05.834Z,
-//     posts: [],
-//     __v: 0
-//   }
