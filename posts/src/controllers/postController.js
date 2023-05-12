@@ -4,7 +4,7 @@ const axios = require('axios')
 const dotenv = require('dotenv')
 dotenv.config()
 
-const { validateCreatePost, validateUpdatePost} = require('../lib/validator')
+const { validateCreatePost, validateUpdatePost} = require('../lib/validations/postValidator')
 
 const getUserRoute = process.env.getUserRoute
 
@@ -73,8 +73,8 @@ exports.createPost = async (req, res, next) => {
 
 exports.updatePost = async (req, res, next) => {
     try {
-        
-        const { error } = validateCreatePost(req.body)
+
+        const { error } = validateUpdatePost(req.body)
 
         if(error){
             return res.status(400).json({ message: error.details[0].message})

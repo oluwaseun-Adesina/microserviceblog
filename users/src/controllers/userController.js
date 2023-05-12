@@ -4,7 +4,7 @@ dotenv.config();
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcryptjs')
 
-const {validateUser, validateUserLogin} = require('../lib/validator')
+const {validateUser, validateUserLogin} = require('../lib/validations/userValidator')
 
 
 const secret = process.env.APP_SECRET;
