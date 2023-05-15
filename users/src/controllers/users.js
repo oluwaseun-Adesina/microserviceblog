@@ -43,12 +43,17 @@ const controller = {
 
       const create_user = await lib.registerUser(params);
 
-      if (create_user.token)
-        res.status(201).json({
-          status_code: 201,
-          message: "Registered Successfully",
-          data: create_user.token,
-        });
+      // console.log(create_user)
+
+      if (create_user)
+        // set header token
+        req.headers.authorization = create_user;
+
+      res.status(201).json({
+        status_code: 201,
+        message: "Registered Successfully",
+        data: create_user,
+      });
     } catch (err) {
       next(err);
     }
@@ -58,53 +63,24 @@ const controller = {
 
   async loginUser(req, res, next) {
     try {
-      // validate user input
-      const { error } = validateUserLogin(req.body);
+      let params;
 
-      if (error) {
-        return res.status(400).json({ message: error.details[0].message });
-      }
+      params = req.body;
 
-      const { email, password } = req.body;
+      const login_user = await lib.loginUser(params);
 
-      // check if email already exists
-      const emailExist = await User.findOne({ email }).select("password");
+      if (login_user)
 
-      // console.log(emailExist)
-
-      if (!emailExist) {
-        return res.status(400).json({ message: "Email does not exist" });
-      }
-
-      // check if password is correct
-      const validPassword = bcrypt.compareSync(password, emailExist.password);
-
-      if (!validPassword) {
-        return res.status(400).json({ message: "Invalid password" });
-      }
-
-      const token = createToken({
-        id: emailExist._id,
-        name: emailExist.name,
-        email: emailExist.email,
-      });
-      // console.log(token)
-
-      // console.log(emailExist)
-
-      // set header token
-      req.headers.authorization = token;
-
+        // set header token
+        req.headers.authorization = login_user;
       res.status(200).json({
-        message: "Logged in successfully",
-        data: emailExist,
-        auth: token,
+        status_code: 200,
+        message: "Logged in Successfully",
+        data: login_user,
       });
 
-      // console.log(req.headers)
     } catch (err) {
-      console.log(err);
-      res.status(400).json({ err });
+      next(err);
     }
   },
 
@@ -112,82 +88,24 @@ const controller = {
 
   async logoutUser(req, res, next) {
     try {
-      // make the token  in the header expire
-      const expiredToken = jwt.sign({ id: null }, secret, {
-        expiresIn: 1,
-      });
-      req.headers.authorization = expiredToken;
 
-      // res.cookie('jwt', '', { maxAge: 1})
+      const expiredToken = await lib.logoutUser();
 
-      // req.headers.authorization = null
+      if (expiredToken) {
+        req.headers.authorization = expiredToken;
 
-      // console.log(req.headers)
-
-      res.status(200).json({ message: "Logged out successfully" });
-    } catch (err) {
-      console.log(err);
-      res.status(400).json({ err });
-    }
-  },
-
-  // FORGOT PASSWORD
-
-  async forgotPassword(req, res, next) {
-    try {
-      const { email } = req.body;
-
-      // check if email already exists
-      const emailExist = await UserfindOne({ email });
-
-      if (!emailExist) {
-        return res.status(400).json({ message: "Email does not exist" });
+        res.status(200).json({
+          status_code: 200,
+          message: "Logged out Successfully",
+          data: expiredToken,
+        });
       }
 
-      // get reset token
-      const resetToken = emailExist.getResetPasswordToken();
-
-      await emailExist.save();
-
-      // create reset url
-
-      const resetUrl = `${req.protocol}://${req.get(
-        "host"
-      )}/api/v1/resetpassword/${resetToken}`;
-
-      // const message = `You are receiving this email because you (or someone else) has requested the reset of a password. Please make a PUT request to: \n\n ${resetUrl}`
-
-      // try{
-
-      //     await sendEmail({
-      //         email: emailExist.email,
-      //         subject: 'Password reset token',
-      //         message
-      //     })
-
-      //     res.status(200).json({ success: true, data: 'Email sent' })
-
-      // }
-      // catch(err){
-      //     console.log(err)
-      //     emailExist.resetPasswordToken = undefined
-      //     emailExist.resetPasswordExpire = undefined
-
-      //     await emailExist.save()
-
-      //     return next(new ErrorResponse('Email could not be sent', 500))
-      // }
     } catch (err) {
-      console.log(err);
-      res.status(400).json({ err });
+      next(err)
     }
   },
 
-  // RESET PASSWORD
-
-  async resetPassword(req, res, next) {
-    console.log(req.params.resetToken);
-  },
 
   // GET USER PROFILE
 
@@ -196,9 +114,11 @@ const controller = {
       // console.log(req.user)
       const user = req.user;
 
-      res
-        .status(200)
-        .json({ message: "User profile fetched successfully", data: user });
+      res.status(200).json({
+        status_code: 200,
+        message: "User Profile fetched",
+        data: user
+      })
     } catch (error) {
       console.log(error);
       res.status(400).json({ error });
@@ -209,31 +129,23 @@ const controller = {
 
   async updatePassword(req, res, next) {
     try {
-      // get user
-      const user = await User.findById(req.user.id).select("+password");
+      let params
+      params = req.body
 
-      // check if current password is correct
-      const isMatch = await bcrypt.compare(
-        req.body.currentPassword,
-        user.password
-      );
+      const id = req.user.id
 
-      if (!isMatch) {
-        return res.status(400).json({ message: "Invalid password" });
+      const update_password = await lib.updatePassword(params, id)
+
+      if (update_password) {
+        res.status(200).json({
+          status_code: 200,
+          message: "User Password Updated Successfully",
+          data: update_password
+        })
       }
 
-      // hash password
-      const salt = await bcrypt.genSalt();
-      const hashedPassword = await bcrypt.hash(req.body.newPassword, salt);
-
-      user.password = hashedPassword;
-
-      await user.save();
-
-      res.status(200).json({ message: "Password updated successfully" });
-    } catch (error) {
-      console.log(error);
-      res.status(400).json({ error });
+    } catch (err) {
+      next(err)
     }
   },
 
@@ -241,22 +153,23 @@ const controller = {
 
   async updateProfile(req, res, next) {
     try {
-      const { name, email } = req.body;
+      let params;
 
-      // get user
-      const user = await User.findById(req.user.id);
+      params = req.body;
 
-      user.name = name || user.name;
-      user.email = email || user.email;
+      const id = req.user.id
 
-      await user.save();
+      const update_profile = await lib.updateProfile(params, id)
 
-      res
-        .status(200)
-        .json({ message: "Profile updated successfully", data: user });
-    } catch (error) {
-      console.log(error);
-      res.status(400).json({ error });
+      if (update_profile) {
+        res.status(200).json({
+          status_code: 200,
+          message: "User Profile Updated Successfully",
+          data: update_profile
+        })
+      }
+    } catch (err) {
+      next(err)
     }
   },
 
@@ -265,10 +178,13 @@ const controller = {
     try {
       const users = await User.find();
 
-      res.status(200).json({ message: "Fetched All User", data: users });
-    } catch (error) {
-      console.log(error);
-      res.status(400).json({ error });
+      res.status(200).json({
+        status_code: 200,
+        message: "Fetched All User",
+        data: users
+      })
+    } catch (err) {
+      next(err)
     }
   },
 
@@ -276,95 +192,57 @@ const controller = {
 
   async getUserDetails(req, res, next) {
     try {
-      const { id } = req.params;
 
-      // find user
-      const user = await User.findById(id);
+      let params 
+      
+      params = req.params
 
-      if (!user) {
-        return res.status(400).json({ message: "User not found" });
+      
+
+      console.log(params)
+      
+      const get_user_details = await lib.getUserDetails(params)
+
+      if(get_user_details){
+        res.status(200).json({
+          status_code: 200,
+          message: "User Details Fetched",
+          data: get_user_details
+        })
       }
 
       res.status(200).json({ message: "User details", data: user });
-    } catch (error) {
-      console.log(error);
-      res.status(400).json({ error });
+    } catch (err) {
+      next(err)
     }
   },
 
-  // UPDATE USER
 
-  async updateUser(req, res, next) {
-    try {
-      const { id } = req.params;
-
-      // find user
-      const user = await User.findById(id);
-
-      if (!user) {
-        return res.status(400).json({ message: "User not found" });
-      }
-
-      const { name, email, role } = req.body;
-
-      user.name = name || user.name;
-      user.email = email || user.email;
-      user.role = role || user.role;
-
-      await user.save();
-
-      res
-        .status(200)
-        .json({ message: "User updated successfully", data: user });
-    } catch (error) {
-      console.log(error);
-      res.status(400).json({ error });
-    }
-  },
 
   // DELETE USER
 
   async deleteUser(req, res, next) {
     try {
-      const { id } = req.params;
+      let params  
+      params = req.params;
 
-      // find user
-      const user = await User.findById(id);
+      console.log(params)
 
-      if (!user) {
-        return res.status(400).json({ message: "User not found" });
+      const delete_user = await lib.deleteUser(params)
+
+      if(delete_user){
+        res.status(200).json({
+          status_code: 200,
+          message: "User Deleted Successfully",
+          data: delete_user
+        })
       }
-
-      // remove user
-
-      User.findByIdAndDelete(id);
-
-      res.status(200).json({ message: "User deleted successfully" });
-    } catch (error) {
-      console.log(error);
-      res.status(400).json({ error });
+      
+    } catch (err) {
+      next(err)
     }
   },
 
-  async createPost(req, res, next) {
-    try {
-      const user = User.findById({ _id: req.user._id });
-
-      if (!user) {
-        return res.status(404).json({ message: "User not Found" });
-      }
-
-      const newPost = {};
-
-      user.posts.push(newPost);
-
-      await user.save();
-
-      res.status(201).json({ message: "Post Created", post: newPost });
-    } catch (error) {
-      next(error);
-    }
-  },
 };
 
 module.exports = controller;

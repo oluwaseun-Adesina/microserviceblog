@@ -29,17 +29,26 @@ router.route("/login").post(loginUser);
 // logout user
 router.route("/logout").get(logoutUser);
 
-// forgot password
-router.route("/password/forgot").post(forgotPassword);
-
-// add user post
-// router.route('/users/:id/posts').post(requireAuth, createPost)
-
-// reset password
-router.route("/password/reset/:token").put(resetPassword);
 
 // get user profile
 router.route("/me").get(requireAuth, getUserProfile);
+
+// get user details
+router.route('/:id').get(requireAuth, getUserDetails);
+
+// delete user
+router.route('/:id').delete(requireAuth,  deleteUser);
+
+// // forgot password
+// router.route("/password/forgot").post(forgotPassword);
+
+// // add user post
+// // router.route('/users/:id/posts').post(requireAuth, createPost)
+
+// // reset password
+// router.route("/password/reset/:token").put(resetPassword);
+
+
 
 // // add userpost
 // router.route('/posts').post(requireAuth,addPost);
@@ -59,11 +68,11 @@ router.route("/me/update").put(requireAuth, updateProfile);
 // get all users - admin
 router.route("/admin/users").get(requireAuth, checkAdmin, allUsers);
 
-// get user details - admin
-router
-  .route("/admin/user/:id")
-  .get(requireAuth, checkAdmin, getUserDetails)
-  .put(requireAuth, checkAdmin, updateUser)
-  .delete(requireAuth, checkAdmin, deleteUser);
+// // get user details - admin
+// router
+//   .route("/admin/user/:id")
+//   .get(requireAuth, checkAdmin, getUserDetails)
+//   .put(requireAuth, checkAdmin, updateUser)
+//   .delete(requireAuth, checkAdmin, deleteUser);
 
 module.exports = router;
