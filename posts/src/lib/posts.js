@@ -7,7 +7,7 @@ const axios = require('axios')
 const dotenv = require('dotenv')
 dotenv.config()
 
-const { validateCreatePost, validateUpdatePost } = require('../lib/validations/posts')
+const { validateCreatePost, validateUpdatePost, validateId } = require('../lib/validations/posts')
 
 const getUserRoute = process.env.getUserRoute
 
@@ -31,7 +31,7 @@ const lib = {
     },
 
     async createPost(params, user) {
-        const { error } = validateCreatePost(params)
+        let { error } = validateCreatePost(params)
 
         if (error) {
             throw new AppError(400, error.details[0].message)
@@ -53,11 +53,22 @@ const lib = {
         return post
     },
 
-    async updatePost(params, user) {
-        const { error } = validateUpdatePost(params)
+    async updatePost(params, user, idObject) {
 
-        if (error) {
-            throw new AppError(400, error.details[0].message)
+        let { error: idError } = validateId(idObject)
+
+        if (idError) {
+            throw new AppError(400, idError.details[0].message)
+        }
+
+        // error = null
+
+        let  { error: paramsError } = validateUpdatePost(params)
+
+        // error1  = validateUpdatePost(params)
+         
+        if (paramsError) {
+            throw new AppError(400, paramsError.details[0].message)
         }
 
         const { title, description } = params
@@ -65,8 +76,8 @@ const lib = {
         const updatedbyUser = user
 
         const updatedbyUserId = updatedbyUser.id
-
-        const post = await Post.findByIdAndUpdate(params.id, {
+        
+        const post = await Post.findByIdAndUpdate(idObject.id, {
             title,
             description,
             updatedby: updatedbyUserId,
@@ -81,6 +92,13 @@ const lib = {
     },
 
     async deletePost(params) {
+
+        const { error } = validateId(params)
+
+        if (error) {
+            throw new AppError(400, error.details[0].message)
+        }
+
         const post = await Post.findByIdAndDelete(params.id)
 
         if (!post) {
@@ -91,6 +109,13 @@ const lib = {
     },
 
     async getPostByUser(params) {
+
+        const { error } = validateId(params)
+
+        if (error) {
+            throw new AppError(400, error.details[0].message)
+        }
+
         const posts = await Post.find({ createdby: params.id })
 
         if (!posts) {
@@ -101,6 +126,12 @@ const lib = {
     },
 
     async countPostByUser( params){
+
+        const { error } = validateId(params)
+
+        if (error) {
+            throw new AppError(400, error.details[0].message)
+        }
         const count = await Post.countDocuments({ createdby: params.id })
 
         if(!count){

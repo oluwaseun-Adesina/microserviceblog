@@ -17,7 +17,7 @@ const createPostSchema = joi.object({
 
 // update post schema
 const updatePostSchema = joi.object({
-    title: joi.string().required().messages({
+    title: joi.string().messages({
         "any.required": "Please enter the title for the post",
         "string.empty": "Please enter the title for the post",
     }),
@@ -28,6 +28,13 @@ const updatePostSchema = joi.object({
     }),
 })
 
+const validateIdSchema = joi.object({
+    id: joi.string().required().min(24).messages({
+      "any.required": "Please enter your id.",
+      "string.empty": "Please enter your id.",
+      "string.min": "Please provide a valid id."
+    }),
+  });
 // validate create post 
 const validateCreatePost = (post) => {
     return createPostSchema.validate(post)
@@ -35,10 +42,15 @@ const validateCreatePost = (post) => {
 
 // validate update post
 const validateUpdatePost = (post) => {
-    return updatePostSchema.valid(post)
+    return updatePostSchema.validate(post)
+}
+
+const validateId = (id) => {
+    return validateIdSchema.validate(id)
 }
 
 module.exports = {
     validateCreatePost,
-    validateUpdatePost
+    validateUpdatePost,
+    validateId
 }

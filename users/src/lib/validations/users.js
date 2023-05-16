@@ -59,7 +59,7 @@ const updateProfileSchema = joi.object({
 
 // get user details schema
 const getUserDetailsSchema = joi.object({
-  id: joi.string().required().min(9).messages({
+  id: joi.string().required().min(24).messages({
     "any.required": "Please enter your id.",
     "string.empty": "Please enter your id.",
     "string.min": "Please provide a valid id."

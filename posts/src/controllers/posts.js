@@ -71,9 +71,10 @@ exports.createPost = async (req, res, next) => {
 exports.updatePost = async (req, res, next) => {
     try {
         let params = req.body
+        let idObject = req.params
         let user = req.user
 
-        const update_post = await lib.updatePost(params, user)
+        const update_post = await lib.updatePost(params, user, idObject)
 
         res.status(201).json({
             status_code: 201,
